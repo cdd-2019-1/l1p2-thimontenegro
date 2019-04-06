@@ -1,5 +1,6 @@
 ---
-title: "REPLACE ME"
+title: "Lab 01 - Tweets dos congressitas brasileiros em 2019"
+author: 'Thiago Cunha Montenegro'
 output:
     html_document:
     df_print: paged
@@ -15,3 +16,94 @@ theme_set(theme_bw())
 ```{r read}
 atividade = read_projectdata()
 ```
+#Quais parlamentares possuem mais seguidores
+```{r}
+  
+```
+
+#Qual casa possui mais parlamentares ativos? Considerando a media do engajemento dos tweets de cada parlamentar
+```{r}
+  atividade %>%
+      filter(!is.na(twitter)) %>%
+      group_by(casa) %>%
+      summarise(media_engajamento = mean(engaj_total)) %>%
+      ggplot(aes(x = casa, y = media_engajamento, fill = casa)) +
+      geom_col(width = .2) +
+      ggtitle('Engajamento dos tweets entre Câmara e Senado') +
+      xlab('Câmara x Senado') +
+      ylab('Média do Engajamento dos tweets')
+
+```
+
+
+Logo, percebemos que a casa que possui mais parlamentares ativos é a câmara, mas quem são os deputados mais ativos no twitter?
+
+#A partir do gráfico anterior. Quem são os deputados mais ativos no Twitter?
+```{r}
+  atividade %>%
+      filter(!is.na(twitter) & casa == 'câmara') %>%
+      group_by(nome_eleitoral) %>%
+      summarise(total_engajamento = sum(engaj_total)) %>%
+      arrange(-total_engajamento) %>%
+      slice(1:10) %>%
+      ggplot(aes(x = reorder(nome_eleitoral,total_engajamento),y = total_engajamento)) +
+      geom_point() +
+      coord_flip() +
+      ggtitle('Deputados mais ativos no twitter') +
+      xlab('Deputados') +
+      ylab('Engajamento dos Tweets')
+  
+```
+
+
+Logo os deputados mais ativos no twitter são Carla Zambelli, Joice Hasselmann, Bia Kicks, Marcelo Freixo e dentre outros.
+
+#Quem são os parlamentares que possuem mais seguidores?
+```{r}
+    atividade %>%
+        filter(!is.na(twitter)) %>%
+        group_by(nome_eleitoral) %>%
+        summarise(total_seguidores = sum(seguidores)) %>%
+        arrange(-total_seguidores) %>%
+        slice(1:10) %>%
+        ggplot(aes(x = reorder(nome_eleitoral,total_seguidores),                    y = total_seguidores)) +
+        geom_point() +
+        coord_flip() +
+        ggtitle('Qual parlamentar possui mais seguidores?') +
+        xlab('Número de Seguidores') +
+        ylab('Parlamentares')
+```
+
+
+Os parlamentares que possuem mais seguidores são: Romário (Ex-Jogador) seguido por José Serra e Flávio Bolsonaro.
+
+
+#Existe uma correlação entre os parlamentares mais seguidos, com o engajamento de seus tweets?
+```{r}
+  teste = atividade %>%
+      filter(!is.na(twitter)) %>%
+      group_by(nome_eleitoral) %>%
+      summarise(total_seguidores = sum(seguidores),
+                engajamento = sum(engaj_total_proprio),
+                relacao = engajamento/total_seguidores) %>%
+      arrange(-relacao) 
+
+  atividade %>%
+      filter(!is.na(twitter)) %>%
+      group_by(nome_eleitoral) %>%
+      summarise(total_seguidores = sum(seguidores),
+                engajamento = sum(engaj_total_proprio),
+                relacao = engajamento/total_seguidores) %>%
+      arrange(-relacao) %>%
+      slice(1:5) %>%
+      ggplot(aes(x = reorder(nome_eleitoral,relacao), total_seguidores)) +
+      geom_point() +
+      coord_flip() +
+      ggtitle('Engajamento Próprio X Seguidores') +
+      ylab('Número total de Seguidores') +
+      xlab('Parlamentares')
+      
+```
+
+
+Percebemos neste gráfico, que a relação de engajamento e o número de seguidores não possuem relação alguma, devido que possuímos o parlamentar Carlos Jordy e Daniel Silveira, que são parlamentares que possuem um número pequeno de seguidores, mas a relação com o engajamento é superior do que deputados que possuem maior número de seguidores, como por exemplo o senador Romário.
